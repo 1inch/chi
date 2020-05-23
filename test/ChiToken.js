@@ -17,6 +17,10 @@ contract('ChiToken', async accounts => {
             expect((await this.chiToken.totalSupply()).toString()).to.be.equal('100');
         });
 
+        it('Should fail to free up', async function () {
+            expectRevert(this.chiToken.free(100, {from: accounts[3]}), 'ERC20: burn amount exceeds balance');
+        });
+
         it('Should free up', async function () {
             await this.chiToken.free(100);
             expect((await this.chiToken.totalSupply()).toString()).to.be.equal('0');

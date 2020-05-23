@@ -63,24 +63,24 @@ contract ChiToken is ERC20Burnable {
     }
 
     function free(uint256 value) public {
-        _destroyChildren(value);
         _burn(msg.sender, value);
+        _destroyChildren(value);
     }
 
     function freeUpTo(uint256 value) public returns (uint256 amount) {
         amount = Math.min(value, balanceOf(msg.sender));
-        _destroyChildren(amount);
         _burn(msg.sender, amount);
+        _destroyChildren(amount);
     }
 
     function freeFrom(address from, uint256 value) public {
-        _destroyChildren(value);
         _burn(from, value);
+        _destroyChildren(value);
     }
 
     function freeFromUpTo(address from, uint256 value) public returns (uint256 amount) {
         amount = Math.min(Math.min(value, balanceOf(from)), allowance(from, msg.sender));
-        _destroyChildren(amount);
         _burn(from, amount);
+        _destroyChildren(amount);
     }
 }
