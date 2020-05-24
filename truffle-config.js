@@ -6,20 +6,20 @@ module.exports = {
       host: 'localhost',
       port: 9545,
       network_id: '*',
-      gas: 8000000,
+      gas: 8000000000,
       gasPrice: 1000000000, // web3.eth.gasPrice
     },
     coverage: {
       host: 'localhost',
       port: 8555,
       network_id: '*',
-      gas: 8000000,
+      gas: 8000000000,
       gasPrice: 1000000000, // web3.eth.gasPrice
     }
   },
   compilers: {
     solc: {
-      version: '0.6.8',
+      version: '0.5.17',
       settings: {
         optimizer: {
           enabled: true,
