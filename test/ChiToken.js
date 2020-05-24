@@ -17,7 +17,7 @@ contract('ChiToken', async accounts => {
         it('Should mint', async function () {
             await this.chiToken.mint(1000);
             expect((await this.chiToken.totalSupply()).toString()).to.be.equal('1000');
-            expect(await this.chiToken.computeAddress2(0)).to.be.equal('0x02743b329444162cbc3199958887a7C6294013c0');
+            expect(await this.chiToken.computeAddress2(0)).to.be.equal('0x78D8a376e10F1098d9025A50B0fdAC3954572c8A');
             // expect(await this.chiToken.codeAt(await this.chiToken.computeAddress2(0))).to.be.equal('0x756d4946c0e9f43f4dee607b0ef1fa1c3318585733ff6000526016600af3');
             //
             // const code = await web3.eth.getCode(await this.chiToken.computeAddress2(0));

@@ -16,7 +16,7 @@ contract ChiToken is ERC20Burnable, ERC20Detailed {
     function mint(uint256 value) public {
         uint256 offset = totalSupply() + totalBurned;
         assembly {
-            mstore(0, 0x756d4946c0e9f43f4dee607b0ef1fa1c3318585733ff6000526016600af30000)
+            mstore(0, 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
 
             for {let i := div(value, 32)} i {i := sub(i, 1)} {
                 pop(create2(0, 0, 30, add(offset, 0))) pop(create2(0, 0, 30, add(offset, 1)))
@@ -48,7 +48,7 @@ contract ChiToken is ERC20Burnable, ERC20Detailed {
 
     function computeAddress2(uint256 salt) public view returns (address) {
         bytes32 _data = keccak256(
-            abi.encodePacked(bytes1(0xff), address(this), salt, bytes32(0xc5bc5cd87d59dc45033753f4f923401054da10c6d304da2848e2df1198fea79d))
+            abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(hex"746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf3"))
         );
         return address(bytes20(_data << 96));
     }
