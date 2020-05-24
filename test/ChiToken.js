@@ -12,11 +12,12 @@ contract('ChiToken', async accounts => {
 
         it('Should have right contract address', async function () {
             expect(this.chiToken.address).to.be.equal('0x0000000000004946c0e9F43F4Dee607b0eF1fA1c');
+            // expect(this.chiToken.address).to.be.equal('0x000000000097f1f995665BE2191193a57c68992C');
         });
 
         it('Should mint', async function () {
-            await this.chiToken.mint(1000);
-            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('1000');
+            await this.chiToken.mint(100);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('100');
             expect(await this.chiToken.computeAddress2(0)).to.be.equal('0x78D8a376e10F1098d9025A50B0fdAC3954572c8A');
             // expect(await this.chiToken.codeAt(await this.chiToken.computeAddress2(0))).to.be.equal('0x756d4946c0e9f43f4dee607b0ef1fa1c3318585733ff6000526016600af3');
             //
@@ -29,10 +30,10 @@ contract('ChiToken', async accounts => {
         });
 
         it('Should free up', async function () {
-            await this.chiToken.approve(this.testHelper.address, 200);
-            await this.testHelper.burnGasAndFreeFrom(this.chiToken.address, 5000000, 200);
+            await this.chiToken.approve(this.testHelper.address, 100);
+            await this.testHelper.burnGasAndFreeFrom(this.chiToken.address, 5000000, 100);
             // await this.chiToken.free(100);
-            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('800');
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('0');
         });
     });
 });

@@ -1,16 +1,16 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 
 
-contract ChiToken is ERC20Burnable, ERC20Detailed {
+contract ChiToken is ERC20Burnable {
 
     uint256 public totalBurned;
 
-    constructor () ERC20Detailed("Chi Token by 1inch", "CHI", 0) public {
+    constructor () ERC20("Chi Token by 1inch", "CHI") public {
 
+        _setupDecimals(0);
     }
 
     function mint(uint256 value) public {
