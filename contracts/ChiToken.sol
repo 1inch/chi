@@ -1,20 +1,82 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
-contract ChiToken is ERC20Burnable {
+abstract contract ERC20WithoutTotalSupply is IERC20 {
+    using SafeMath for uint256;
 
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+
+    function balanceOf(address account) public view override returns (uint256) {
+        return _balances[account];
+    }
+
+    function allowance(address owner, address spender) public view override returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function transfer(address recipient, uint256 amount) public override returns (bool) {
+        _transfer(msg.sender, recipient, amount);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) public override returns (bool) {
+        _approve(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+        _transfer(sender, recipient, amount);
+        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        return true;
+    }
+
+    function _transfer(address sender, address recipient, uint256 amount) internal {
+        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[recipient] = _balances[recipient].add(amount);
+        emit Transfer(sender, recipient, amount);
+    }
+
+    function _approve(address owner, address spender, uint256 amount) internal {
+        _allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
+
+    function _mint(address account, uint256 amount) internal {
+        _balances[account] = _balances[account].add(amount);
+        emit Transfer(address(0), account, amount);
+    }
+
+    function _burn(address account, uint256 amount) internal {
+        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
+        emit Transfer(account, address(0), amount);
+    }
+
+    function _burnFrom(address account, uint256 amount) internal {
+        _burn(account, amount);
+        _approve(account, msg.sender, _allowances[account][msg.sender].sub(amount, "ERC20: burn amount exceeds allowance"));
+    }
+}
+
+
+contract ChiToken is IERC20, ERC20WithoutTotalSupply {
+    string constant public name = "Chi Token by 1inch";
+    string constant public symbol = "CHI";
+    uint8 constant public decimals = 0;
+
+    uint256 public totalMinted;
     uint256 public totalBurned;
 
-    constructor () ERC20("Chi Token by 1inch", "CHI") public {
-
-        _setupDecimals(0);
+    function totalSupply() public view override returns(uint256) {
+        return totalMinted.sub(totalBurned);
     }
 
     function mint(uint256 value) public {
-        uint256 offset = totalSupply() + totalBurned;
+        uint256 offset = totalMinted;
         assembly {
             mstore(0, 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
 
@@ -39,11 +101,13 @@ contract ChiToken is ERC20Burnable {
             }
 
             for {let i := and(value, 0x1F)} i {i := sub(i, 1)} {
-                pop(create2(0, 0, 30, add(offset, i)))
+                pop(create2(0, 0, 30, offset))
+                offset := add(offset, 1)
             }
         }
 
         _mint(msg.sender, value);
+        totalMinted = offset;
     }
 
     function computeAddress2(uint256 salt) public view returns (address) {
@@ -55,14 +119,14 @@ contract ChiToken is ERC20Burnable {
 
     function _destroyChildren(uint256 value) internal {
         uint256 _totalBurned = totalBurned;
-        for (uint256 i = _totalBurned; i < _totalBurned + value; i++) {
-            computeAddress2(i).call("");
+        for (uint256 i = 0; i < value; i++) {
+            computeAddress2(_totalBurned + i).call("");
         }
         totalBurned = _totalBurned + value;
     }
 
     function free(uint256 value) public returns (uint256)  {
-        burn(value);
+        _burn(msg.sender, value);
         _destroyChildren(value);
         return value;
     }
@@ -72,7 +136,7 @@ contract ChiToken is ERC20Burnable {
     }
 
     function freeFrom(address from, uint256 value) public returns (uint256) {
-        burnFrom(from, value);
+        _burnFrom(from, value);
         _destroyChildren(value);
         return value;
     }
