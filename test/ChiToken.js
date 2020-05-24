@@ -16,24 +16,40 @@ contract('ChiToken', async accounts => {
         });
 
         it('Should mint', async function () {
-            await this.chiToken.mint(100);
-            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('100');
+            await this.chiToken.mint(200);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('200');
             expect(await this.chiToken.computeAddress2(0)).to.be.equal('0x78D8a376e10F1098d9025A50B0fdAC3954572c8A');
-            // expect(await this.chiToken.codeAt(await this.chiToken.computeAddress2(0))).to.be.equal('0x756d4946c0e9f43f4dee607b0ef1fa1c3318585733ff6000526016600af3');
-            //
-            // const code = await web3.eth.getCode(await this.chiToken.computeAddress2(0));
-            // expect(code.toString('hex')).to.be.equal('0x756e4946c0e9f43f4dee607b0ef1fa1c3318585733ff6000526016600af3');
         });
 
         it('Should fail to free up', async function () {
             expectRevert(this.chiToken.free(100, {from: accounts[3]}), 'ERC20: burn amount exceeds balance');
         });
 
-        it('Should free up', async function () {
-            await this.chiToken.approve(this.testHelper.address, 100);
-            await this.testHelper.burnGasAndFreeFrom(this.chiToken.address, 5000000, 100);
-            // await this.chiToken.free(100);
-            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('0');
+        it('Should burnGasAndFreeFrom', async function () {
+            await this.chiToken.mint(100);
+            await this.chiToken.approve(this.testHelper.address, 50);
+            await this.testHelper.burnGasAndFreeFrom(this.chiToken.address, 5000000, 50);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('250');
+        });
+
+        it('Should burnGasAndFree', async function () {
+            await this.chiToken.transfer(this.testHelper.address, 75);
+            await this.testHelper.burnGasAndFree(this.chiToken.address, 5000000, 75);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('175');
+        });
+
+        it('Should burnGasAndFreeUpTo', async function () {
+            await this.chiToken.mint(75);
+            await this.chiToken.transfer(this.testHelper.address, 75);
+            await this.testHelper.burnGasAndFreeUpTo(this.chiToken.address, 5000000, 75);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('175');
+        });
+
+        it('Should burnGasAndFreeFromUpTo', async function () {
+            await this.chiToken.mint(100);
+            await this.chiToken.approve(this.testHelper.address, 70);
+            await this.testHelper.burnGasAndFreeFromUpTo(this.chiToken.address, 5000000, 70);
+            expect((await this.chiToken.totalSupply()).toString()).to.be.equal('205');
         });
     });
 });
