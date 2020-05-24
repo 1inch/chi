@@ -39,6 +39,7 @@
     "dist": "truffle-flattener ./contracts/ChiToken.sol > ChiToken.full.sol && solcjs --bin --abi --optimize ChiToken.full.sol && mv ChiToken_full_sol_ChiToken.bin ChiToken.full.bin && mv ChiToken_full_sol_ChiToken.abi ChiToken.full.abi && rm *_sol_*"
   },
   "dependencies": {
-    "ethereum-tx-decoder": "^3.0.0"
+    "ethereum-tx-decoder": "^3.0.0",
+    "ethereumjs-tx": "^2.1.2"
   }
 }
