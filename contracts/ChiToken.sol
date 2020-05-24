@@ -114,7 +114,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
         bytes32 _data = keccak256(
             abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(hex"746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf3"))
         );
-        return address(bytes20(_data << 96));
+        return address(uint256(_data));
     }
 
     function _destroyChildren(uint256 value) internal {
