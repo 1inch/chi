@@ -31,7 +31,10 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        uint256 allowance = _allowances[sender][msg.sender];
+        if (allowance >> 248 < 0xfe) {
+            _approve(sender, msg.sender, allowance.sub(amount, "ERC20: transfer amount exceeds allowance"));
+        }
         return true;
     }
 
@@ -58,7 +61,10 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        _approve(account, msg.sender, _allowances[account][msg.sender].sub(amount, "ERC20: burn amount exceeds allowance"));
+        uint256 allowance = _allowances[account][msg.sender];
+        if (allowance >> 248 < 0xfe) {
+            _approve(account, msg.sender, allowance.sub(amount, "ERC20: burn amount exceeds allowance"));
+        }
     }
 }
 
@@ -72,7 +78,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     uint256 public totalBurned;
 
     function totalSupply() public view override returns(uint256) {
-        return totalMinted.sub(totalBurned);
+        return totalMinted - totalBurned;
     }
 
     function mint(uint256 value) public {
@@ -126,8 +132,10 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     }
 
     function free(uint256 value) public returns (uint256)  {
-        _burn(msg.sender, value);
-        _destroyChildren(value);
+        if (value > 0) {
+            _burn(msg.sender, value);
+            _destroyChildren(value);
+        }
         return value;
     }
 
@@ -136,8 +144,10 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     }
 
     function freeFrom(address from, uint256 value) public returns (uint256) {
-        _burnFrom(from, value);
-        _destroyChildren(value);
+        if (value > 0) {
+            _burnFrom(from, value);
+            _destroyChildren(value);
+        }
         return value;
     }
 
