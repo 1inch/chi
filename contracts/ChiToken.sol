@@ -31,9 +31,9 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _transfer(sender, recipient, amount);
-        uint256 allowance = _allowances[sender][msg.sender];
-        if (allowance >> 248 < 0xfe) {
-            _approve(sender, msg.sender, allowance.sub(amount, "ERC20: transfer amount exceeds allowance"));
+        uint256 allowed = _allowances[sender][msg.sender];
+        if ((allowed >> 255) == 0) {
+            _approve(sender, msg.sender, allowed.sub(amount, "ERC20: transfer amount exceeds allowance"));
         }
         return true;
     }
@@ -61,9 +61,9 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        uint256 allowance = _allowances[account][msg.sender];
-        if (allowance >> 248 < 0xfe) {
-            _approve(account, msg.sender, allowance.sub(amount, "ERC20: burn amount exceeds allowance"));
+        uint256 allowed = _allowances[account][msg.sender];
+        if ((allowed >> 255) == 0) {
+            _approve(account, msg.sender, allowed.sub(amount, "ERC20: burn amount exceeds allowance"));
         }
     }
 }
@@ -116,19 +116,30 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
         totalMinted = offset;
     }
 
-    function computeAddress2(uint256 salt) public view returns (address) {
-        bytes32 _data = keccak256(
-            abi.encodePacked(bytes1(0xff), address(this), salt, bytes32(0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348))
-        );
-        return address(uint256(_data));
+    function computeAddress2(uint256 salt) public view returns (address child) {
+        bytes32[3] memory data;
+        assembly {
+            mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
+            mstore(add(data, 21), salt)
+            mstore(add(data, 53), 0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348)
+            child := and(keccak256(data, 85), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+        }
     }
 
     function _destroyChildren(uint256 value) internal {
         uint256 _totalBurned = totalBurned;
-        for (uint256 i = 0; i < value; i++) {
-            computeAddress2(_totalBurned + i).call("");
+        uint256 _newTotalBurned = _totalBurned + value;
+        bytes32[3] memory data;
+        for (uint256 i = _totalBurned; i < _newTotalBurned; i++) {
+            assembly {
+                mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
+                mstore(add(data, 21), i)
+                mstore(add(data, 53), 0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348)
+                let child := and(keccak256(data, 85), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+                pop(call(gas(), child, 0, 0, 0, 0, 0))
+            }
         }
-        totalBurned = _totalBurned + value;
+        totalBurned = _newTotalBurned;
     }
 
     function free(uint256 value) public returns (uint256)  {
