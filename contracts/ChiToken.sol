@@ -31,7 +31,10 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        uint256 allowed = _allowances[sender][msg.sender];
+        if ((allowed >> 255) == 0) {
+            _approve(sender, msg.sender, allowed.sub(amount, "ERC20: transfer amount exceeds allowance"));
+        }
         return true;
     }
 
@@ -58,7 +61,10 @@ abstract contract ERC20WithoutTotalSupply is IERC20 {
 
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        _approve(account, msg.sender, _allowances[account][msg.sender].sub(amount, "ERC20: burn amount exceeds allowance"));
+        uint256 allowed = _allowances[account][msg.sender];
+        if ((allowed >> 255) == 0) {
+            _approve(account, msg.sender, allowed.sub(amount, "ERC20: burn amount exceeds allowance"));
+        }
     }
 }
 
@@ -72,7 +78,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     uint256 public totalBurned;
 
     function totalSupply() public view override returns(uint256) {
-        return totalMinted.sub(totalBurned);
+        return totalMinted - totalBurned;
     }
 
     function mint(uint256 value) public {
@@ -110,24 +116,38 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
         totalMinted = offset;
     }
 
-    function computeAddress2(uint256 salt) public view returns (address) {
-        bytes32 _data = keccak256(
-            abi.encodePacked(bytes1(0xff), address(this), salt, bytes32(0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348))
-        );
-        return address(uint256(_data));
+    function computeAddress2(uint256 salt) public view returns (address child) {
+        assembly {
+            let data := mload(0x40)
+            mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
+            mstore(add(data, 21), salt)
+            mstore(add(data, 53), 0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348)
+            child := and(keccak256(data, 85), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+        }
     }
 
     function _destroyChildren(uint256 value) internal {
-        uint256 _totalBurned = totalBurned;
-        for (uint256 i = 0; i < value; i++) {
-            computeAddress2(_totalBurned + i).call("");
+        assembly {
+            let i := sload(totalBurned_slot)
+            let end := add(i, value)
+            sstore(totalBurned_slot, end)
+
+            let data := mload(0x40)
+            mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
+            mstore(add(data, 53), 0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348)
+            let ptr := add(data, 21)
+            for { } lt(i, end) { i := add(i, 1) } {
+                mstore(ptr, i)
+                pop(call(gas(), keccak256(data, 85), 0, 0, 0, 0, 0))
+            }
         }
-        totalBurned = _totalBurned + value;
     }
 
     function free(uint256 value) public returns (uint256)  {
-        _burn(msg.sender, value);
-        _destroyChildren(value);
+        if (value > 0) {
+            _burn(msg.sender, value);
+            _destroyChildren(value);
+        }
         return value;
     }
 
@@ -136,8 +156,10 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     }
 
     function freeFrom(address from, uint256 value) public returns (uint256) {
-        _burnFrom(from, value);
-        _destroyChildren(value);
+        if (value > 0) {
+            _burnFrom(from, value);
+            _destroyChildren(value);
+        }
         return value;
     }
 
