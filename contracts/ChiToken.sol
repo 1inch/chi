@@ -84,30 +84,30 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     function mint(uint256 value) public {
         uint256 offset = totalMinted;
         assembly {
-            mstore(returndatasize(), 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
+            mstore(callvalue(), 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
 
             for {let i := div(value, 32)} i {i := sub(i, 1)} {
-                pop(create2(0, 0, 30, add(offset, 0))) pop(create2(0, 0, 30, add(offset, 1)))
-                pop(create2(0, 0, 30, add(offset, 2))) pop(create2(0, 0, 30, add(offset, 3)))
-                pop(create2(0, 0, 30, add(offset, 4))) pop(create2(0, 0, 30, add(offset, 5)))
-                pop(create2(0, 0, 30, add(offset, 6))) pop(create2(0, 0, 30, add(offset, 7)))
-                pop(create2(0, 0, 30, add(offset, 8))) pop(create2(0, 0, 30, add(offset, 9)))
-                pop(create2(0, 0, 30, add(offset, 10))) pop(create2(0, 0, 30, add(offset, 11)))
-                pop(create2(0, 0, 30, add(offset, 12))) pop(create2(0, 0, 30, add(offset, 13)))
-                pop(create2(0, 0, 30, add(offset, 14))) pop(create2(0, 0, 30, add(offset, 15)))
-                pop(create2(0, 0, 30, add(offset, 16))) pop(create2(0, 0, 30, add(offset, 17)))
-                pop(create2(0, 0, 30, add(offset, 18))) pop(create2(0, 0, 30, add(offset, 19)))
-                pop(create2(0, 0, 30, add(offset, 20))) pop(create2(0, 0, 30, add(offset, 21)))
-                pop(create2(0, 0, 30, add(offset, 22))) pop(create2(0, 0, 30, add(offset, 23)))
-                pop(create2(0, 0, 30, add(offset, 24))) pop(create2(0, 0, 30, add(offset, 25)))
-                pop(create2(0, 0, 30, add(offset, 26))) pop(create2(0, 0, 30, add(offset, 27)))
-                pop(create2(0, 0, 30, add(offset, 28))) pop(create2(0, 0, 30, add(offset, 29)))
-                pop(create2(0, 0, 30, add(offset, 30))) pop(create2(0, 0, 30, add(offset, 31)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, callvalue()))) pop(create2(callvalue(), callvalue(), 30, add(offset, 1)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 2))) pop(create2(callvalue(), callvalue(), 30, add(offset, 3)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 4))) pop(create2(callvalue(), callvalue(), 30, add(offset, 5)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 6))) pop(create2(callvalue(), callvalue(), 30, add(offset, 7)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 8))) pop(create2(callvalue(), callvalue(), 30, add(offset, 9)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 10))) pop(create2(callvalue(), callvalue(), 30, add(offset, 11)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 12))) pop(create2(callvalue(), callvalue(), 30, add(offset, 13)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 14))) pop(create2(callvalue(), callvalue(), 30, add(offset, 15)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 16))) pop(create2(callvalue(), callvalue(), 30, add(offset, 17)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 18))) pop(create2(callvalue(), callvalue(), 30, add(offset, 19)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 20))) pop(create2(callvalue(), callvalue(), 30, add(offset, 21)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 22))) pop(create2(callvalue(), callvalue(), 30, add(offset, 23)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 24))) pop(create2(callvalue(), callvalue(), 30, add(offset, 25)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 26))) pop(create2(callvalue(), callvalue(), 30, add(offset, 27)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 28))) pop(create2(callvalue(), callvalue(), 30, add(offset, 29)))
+                pop(create2(callvalue(), callvalue(), 30, add(offset, 30))) pop(create2(callvalue(), callvalue(), 30, add(offset, 31)))
                 offset := add(offset, 32)
             }
 
             for {let i := and(value, 0x1F)} i {i := sub(i, 1)} {
-                pop(create2(0, 0, 30, offset))
+                pop(create2(callvalue(), callvalue(), 30, offset))
                 offset := add(offset, 1)
             }
         }
@@ -138,7 +138,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
             let ptr := add(data, 21)
             for { } lt(i, end) { i := add(i, 1) } {
                 mstore(ptr, i)
-                pop(call(gas(), keccak256(data, 85), 0, 0, 0, 0, 0))
+                pop(call(gas(), keccak256(data, 85), callvalue(), callvalue(), callvalue(), callvalue(), callvalue()))
             }
         }
     }
