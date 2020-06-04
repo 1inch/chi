@@ -87,7 +87,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
             mstore(callvalue(), 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
 
             for {let i := div(value, 32)} i {i := sub(i, 1)} {
-                pop(create2(callvalue(), callvalue(), 30, add(offset, callvalue()))) pop(create2(callvalue(), callvalue(), 30, add(offset, 1)))
+                pop(create2(callvalue(), callvalue(), 30, offset))         pop(create2(callvalue(), callvalue(), 30, add(offset, 1)))
                 pop(create2(callvalue(), callvalue(), 30, add(offset, 2))) pop(create2(callvalue(), callvalue(), 30, add(offset, 3)))
                 pop(create2(callvalue(), callvalue(), 30, add(offset, 4))) pop(create2(callvalue(), callvalue(), 30, add(offset, 5)))
                 pop(create2(callvalue(), callvalue(), 30, add(offset, 6))) pop(create2(callvalue(), callvalue(), 30, add(offset, 7)))
