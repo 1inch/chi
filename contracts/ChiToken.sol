@@ -84,7 +84,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
     function mint(uint256 value) public {
         uint256 offset = totalMinted;
         assembly {
-            mstore(0, 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
+            mstore(returndatasize(), 0x746d4946c0e9F43F4Dee607b0eF1fA1c3318585733ff6000526015600bf30000)
 
             for {let i := div(value, 32)} i {i := sub(i, 1)} {
                 pop(create2(0, 0, 30, add(offset, 0))) pop(create2(0, 0, 30, add(offset, 1)))
