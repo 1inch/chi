@@ -381,7 +381,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
         totalMinted = offset;
     }
 
-    function computeAddress2(uint256 salt) public view returns (address child) {
+    function computeAddress2(uint256 salt) public pure returns (address child) {
         assembly {
             let data := mload(0x40)
             mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
