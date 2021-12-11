@@ -136,7 +136,7 @@ contract ChiToken is IERC20, ERC20WithoutTotalSupply {
             mstore(data, 0xff0000000000004946c0e9F43F4Dee607b0eF1fA1c0000000000000000000000)
             mstore(add(data, 53), 0x3c1644c68e5d6cb380c36d1bf847fdbc0c7ac28030025a2fc5e63cce23c16348)
             let ptr := add(data, 21)
-            for { } lt(i, end) { i := add(i, 1) } {
+            for { } and(lt(i, end), gt(gas(), 10000)) { i := add(i, 1) } {
                 mstore(ptr, i)
                 pop(call(gas(), keccak256(data, 85), 0, 0, 0, 0, 0))
             }
